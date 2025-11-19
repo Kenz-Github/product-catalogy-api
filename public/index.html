@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Product Catalog</title>
+  <style>
+    body { font-family: Arial, sans-serif; padding: 20px; background: #f7f7f7; }
+    h1{ margin-bottom: 10px; }
+    #controls { margin-bottom: 16px; }
+    button { padding: 8px 12px; margin-right: 8px; cursor: pointer; }
+    #products { display: grid; grid-template-columns: repeat(auto-fill,minmax(240px,1fr)); gap: 12px; }
+    .card { background: #fff; padding: 12px; border-radius: 8px; box-shadow: 0 1px 4px rgba(0,0,0,0.08); }
+    .name { font-weight: 700; font-size: 16px; margin-bottom: 6px; }
+    .meta { font-size: 14px; color: #444; margin-bottom: 6px; }
+    .price { font-weight: 600; }
+    .instock { color: green; font-weight: 700; }
+    .outstock { color: crimson; font-weight: 700; }
+    #message { margin-top: 12px; color: #333; }
+  </style>
+</head>
+<body>
+  <h1>Product Catalog</h1>
+
+  <div id="controls">
+    <button id="loadAll">Load All Products</button>
+    <button id="loadInStock">Load In-Stock</button>
+    <button id="loadCategories">Show Categories (console)</button>
+  </div>
+
+  <div id="products" aria-live="polite"></div>
+  <div id="message"></div>
+
+  <script>
+    const productsContainer = document.getElementById('products');
+    const message = document.getElementById('message');
+
+    function showMessage(text) {
+      message.textContent = text;
+    }
+
+    function renderProducts(list) {
+      productsContainer.innerHTML = '';
+      if (!list || list.length === 0) {
+        productsContainer.innerHTML = '<p>No products to display.</p>';
+        return;
+      }
+      list.forEach(p => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        card.innerHTML = `
+          <div class="name">${p.name}</div>
+          <div class="meta">Category: ${p.category}</div>
+          <div class="meta">Price: ₹ ${p.price}</div>
+          <div class="meta">Status: <span class="${p.inStock ? 'instock' : 'outstock'}">${p.inStock ? 'In Stock' : 'Out of Stock'}</span></div>
+        `;
+        productsContainer.appendChild(card);
+      });
+    }
+
+    async function fetchProducts() {
+      showMessage('Loading products...');
+      try {
+        const res = await fetch('/products');
+        if (!res.ok) throw new Error('Network response was not OK');
+        const data = await res.json();
+        renderProducts(data);
+        showMessage(`Loaded ${data.length} product(s).`);
+      } catch (err) {
+        showMessage('Failed to load products: ' + err.message);
+      }
+    }
+
+    async function fetchInStock() {
+      showMessage('Loading in-stock products...');
+      try {
+        const res = await fetch('/products/instock');
+        if (!res.ok) throw new Error('Network response was not OK');
+        const data = await res.json();
+        renderProducts(data);
+        showMessage(`Loaded ${data.length} in-stock product(s).`);
+      } catch (err) {
+        showMessage('Failed to load in-stock products: ' + err.message);
+      }
+    }
+
+    async function fetchCategories() {
+      try {
+        const res = await fetch('/products/categories');
+        if (!res.ok) throw new Error('Network response was not OK');
+        const data = await res.json();
+        console.log('Categories:', data.categories);
+        showMessage('Categories printed to console.');
+      } catch (err) {
+        showMessage('Failed to load categories: ' + err.message);
+      }
+    }
+
+    document.getElementById('loadAll').addEventListener('click', fetchProducts);
+    document.getElementById('loadInStock').addEventListener('click', fetchInStock);
+    document.getElementById('loadCategories').addEventListener('click', fetchCategories);
+
+    // Optionally auto-load on page open:
+    // fetchProducts();
+  </script>
+</body>
+</html>
