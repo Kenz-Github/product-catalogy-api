@@ -1,6 +1,5 @@
-(Git repository link: https://github.com/[User name]/product-catalogy-api
-
-Author name:Ahmed rafi )
+(Git repository link: https://github.com/Kenz-Github/product-catalogy-api.git
+Author name:Kenz C )
 
 # Product Catalog API
 
